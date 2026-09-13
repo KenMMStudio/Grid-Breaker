@@ -130,7 +130,7 @@ button{font-family:inherit;}
 #board{
   --n:8;
   display:grid;grid-template-columns:repeat(var(--n),1fr);grid-template-rows:repeat(var(--n),1fr);
-  width:min(88vw,760px);height:min(88vw,760px);gap:3px;padding:8px;border-radius:14px;
+  width:min(88vw,58vh,760px);height:min(88vw,58vh,760px);gap:3px;padding:8px;border-radius:14px;
   background:rgba(4,8,14,.7);border:1px solid var(--panel-border);
   box-shadow:inset 0 0 30px rgba(0,0,0,.6),0 0 26px -8px rgba(34,211,238,.25);position:relative;
 }
@@ -428,7 +428,7 @@ body::before{
 .chip .bar{height:7px;}
 .chip-val{font-size:9px;color:var(--text-dim);}
 
-.viewscreen{height:230px;padding-top:0;}
+.viewscreen{height:min(230px,26vh);padding-top:0;}
 .enemy-hud{position:absolute;top:8px;left:8px;right:8px;z-index:6;background:rgba(5,3,14,.6);border:1px solid var(--panel-border);padding:6px 10px;}
 .enemy-hud .ehud-name{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;}
 .enemy-hud .ehud-name span:first-child{font-weight:700;color:#fff;font-size:12px;text-transform:uppercase;}
@@ -447,11 +447,11 @@ body::before{
   .control-panel .ability{flex:0 1 44%;}
 }
 @media (min-width:900px){
-  .viewscreen{height:320px;}
+  .viewscreen{height:min(320px,30vh);}
   .control-panel .ability{flex:0 1 150px;}
 }
 @media (min-width:1300px){
-  .viewscreen{height:360px;}
+  .viewscreen{height:min(360px,32vh);}
   .chip{flex:1 1 140px;}
 }
 </style>
