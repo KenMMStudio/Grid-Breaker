@@ -447,11 +447,36 @@ body::before{
   .control-panel .ability{flex:0 1 44%;}
 }
 @media (min-width:900px){
-  .viewscreen{height:min(320px,30vh);}
+  /* Real fix: the combat screen's height is bounded to the viewport (100dvh) and
+     every element keeps its natural height EXCEPT the board, which is given
+     flex:1 to absorb whatever vertical space remains. This guarantees the whole
+     screen fits without guessing fixed vh percentages per element. */
+  #screen-game{
+    height:100vh;height:100dvh;
+    overflow-y:auto;overflow-x:hidden;
+    justify-content:flex-start;
+    padding:10px 16px;
+  }
+  #screen-game .topbar{flex:0 0 auto;margin-bottom:8px;}
+  #screen-game .cabinet{flex:1 1 auto;min-height:0;height:100%;gap:8px;}
+  #screen-game .status-marquee,
+  #screen-game .move-msg,
+  #screen-game #timed-panel,
+  #screen-game .control-panel,
+  #screen-game .legend,
+  #screen-game .log-panel{flex:0 0 auto;}
+  #screen-game .viewscreen{flex:0 0 auto;height:clamp(110px,20vh,220px);}
+  #screen-game #board{
+    flex:1 1 0;min-height:160px;
+    width:auto;height:auto;aspect-ratio:1/1;
+    max-width:min(90vw,700px);align-self:center;
+  }
   .control-panel .ability{flex:0 1 150px;}
+  #screen-game .control-panel{padding:10px 12px 8px;}
+  #screen-game .legend{padding:6px 12px;font-size:9.5px;gap:6px;}
 }
 @media (min-width:1300px){
-  .viewscreen{height:min(360px,32vh);}
+  #screen-game .viewscreen{height:clamp(130px,22vh,240px);}
   .chip{flex:1 1 140px;}
 }
 </style>
