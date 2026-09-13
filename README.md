@@ -1,5 +1,19 @@
 # Grid Breaker
 
+## The previous round's "fix" was incomplete — caught by the user with a real screenshot, fixed properly this round
+
+The previous round raised `.cabinet`'s cap from 640px to `min(900px,94vw)` and the board from 440px to 600px, verified there was no horizontal overflow, and declared it fixed. That check was too narrow: at real desktop widths (confirmed with a live screenshot at ~2000px), the interface was correctly centered and technically not overflowing, but it still sat as a small, fixed-width island with hundreds of pixels of dead space on both sides — and the topbar (capped at a leftover, unrelated `1180px`) didn't even share the same width as the `.cabinet` below it, so the whole screen looked structurally mismatched, not just "a bit small." Raising a hard pixel cap by a few hundred pixels was not the same thing as making the layout adapt to the screen, which is what was actually asked for.
+
+**The real fix this round:**
+
+```css
+.topbar{max-width:min(1200px,92vw);}   /* was a hardcoded 1180px, independent of the cabinet */
+.cabinet{max-width:min(1200px,92vw);}  /* was min(900px,94vw) */
+#board{width:min(88vw,760px);height:min(88vw,760px);}  /* was min(88vw,600px) */
+```
+
+`.topbar` and `.cabinet` now share the exact same width formula, so the top bar and the game panels line up as one coherent column instead of two mismatched widths — confirmed by `getBoundingClientRect()` at 2000px width: both measure exactly 1200×… at the same left/right edges. The board grew again, to 760px. This is still a deliberate design choice (a centered single-column "cabinet," not a full-bleed layout — consistent with the arcade-cabinet aesthetic), but the ceiling is now high enough that at common desktop sizes (1440–1920px) the interface visibly fills most of the screen instead of reading as a small floating box.
+
 ## A real viewport/layout bug found by a second review and fixed this round
 
 A prior round's report claimed the responsive layout was "fixed" without providing screenshots that actually proved it. A closer look at the CSS confirmed three real, related problems:
