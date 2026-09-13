@@ -38,6 +38,10 @@ Open either file directly by double-clicking it in a browser, or serve the folde
 - **Console**: checked for JavaScript errors after every major action across both languages — none observed.
 - **After rebranding to Grid Breaker**: verified the title, on-screen brand mark ("GRID BREAKER"), and `localStorage` keys (`gb_save_v1`, `gb_tutorial_seen_v1` / `_fr`) all changed correctly and no "Blackout Protocol" text remains anywhere except the in-fiction boss/ability flavor names explained above.
 
+## A real bug found and fixed after a second review: tutorial claimed 8 steps but only ran 6
+
+The tutorial overlay's counter (`TUT_STEPS = 8`) was correct, but `tutorialOnEnemyAttack()` only ever advanced the flow from step 5 to step 6, then waited for the training target to die — steps 7 and 8 were never shown, so a player would see "Step 6 / 8" and then the tutorial would just end. Found by a second code review, then reproduced and fixed live in the browser: added a real step 7 (explains the Charge and Overload rune roles) and step 8 (the final "finish the training drone" call to action), each auto-advancing on a timer the same way steps 2–4 already did. Re-tested end to end: the overlay now genuinely reaches "STEP 8 / 8" — confirmed on a fresh `localStorage` (first-ever Deploy) with a screenshot of the step-8 text before completing the training target — before `finishTutorial()` fires. Fixed identically in `fr/index.html` ("ÉTAPE 8 / 8").
+
 ## Tests NOT performed — stated honestly
 
 - **Real touch input on physical hardware** was not tested.
