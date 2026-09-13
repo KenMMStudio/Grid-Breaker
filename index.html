@@ -1231,7 +1231,15 @@ function tutorialOnAbility(id){
 function tutorialOnEnemyAttack(){
   if(S.tutorial.step===5){
     S.tutorial.step=6;
-    tutorialShow(6, 'Shield and Repair runes protect and heal you. Finish the training drone to complete the tutorial!');
+    tutorialShow(6, 'Shield and Repair runes protect and heal you — match them whenever your HP or Shield bar runs low.');
+    setTimeout(()=>{
+      S.tutorial.step=7;
+      tutorialShow(7, 'Charge builds toward a guaranteed critical hit. Overload charges your ultimate but chips your own HP — use it carefully.');
+      setTimeout(()=>{
+        S.tutorial.step=8;
+        tutorialShow(8, 'Finish the training drone to complete the tutorial!');
+      }, 2200);
+    }, 2200);
   }
 }
 function clearHints(){ document.querySelectorAll('.cell.hint').forEach(c=>c.classList.remove('hint')); }

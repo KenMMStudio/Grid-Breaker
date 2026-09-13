@@ -1231,7 +1231,15 @@ function tutorialOnAbility(id){
 function tutorialOnEnemyAttack(){
   if(S.tutorial.step===5){
     S.tutorial.step=6;
-    tutorialShow(6, 'Les runes Bouclier et Réparation te protègent et te soignent. Termine le drone d’entraînement pour finir le tutoriel !');
+    tutorialShow(6, 'Les runes Bouclier et Réparation te protègent et te soignent — combine-les dès que ta barre de PV ou de Bouclier baisse.');
+    setTimeout(()=>{
+      S.tutorial.step=7;
+      tutorialShow(7, 'La Charge remplit la jauge critique pour un coup garanti. La Surcharge alimente ton ultime mais entame tes propres PV — utilise-la avec prudence.');
+      setTimeout(()=>{
+        S.tutorial.step=8;
+        tutorialShow(8, 'Termine le drone d’entraînement pour finir le tutoriel !');
+      }, 2200);
+    }, 2200);
   }
 }
 function clearHints(){ document.querySelectorAll('.cell.hint').forEach(c=>c.classList.remove('hint')); }
