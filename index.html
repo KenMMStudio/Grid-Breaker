@@ -130,7 +130,7 @@ button{font-family:inherit;}
 #board{
   --n:8;
   display:grid;grid-template-columns:repeat(var(--n),1fr);grid-template-rows:repeat(var(--n),1fr);
-  width:min(88vw,440px);height:min(88vw,440px);gap:3px;padding:8px;border-radius:14px;
+  width:min(88vw,600px);height:min(88vw,600px);gap:3px;padding:8px;border-radius:14px;
   background:rgba(4,8,14,.7);border:1px solid var(--panel-border);
   box-shadow:inset 0 0 30px rgba(0,0,0,.6),0 0 26px -8px rgba(34,211,238,.25);position:relative;
 }
@@ -415,7 +415,7 @@ body::before{
 
 /* ============ Cabinet composition (single-column arcade terminal) ============ */
 .game-layout{display:none;} /* legacy two-column layout, unused */
-.cabinet{max-width:640px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:12px;}
+.cabinet{max-width:min(900px,94vw);width:100%;margin:0 auto;display:flex;flex-direction:column;gap:12px;}
 .cabinet #board{align-self:center;}
 .cabinet .move-msg{align-self:center;}
 
@@ -445,6 +445,10 @@ body::before{
 @media (max-width:480px){
   .chip{flex:1 1 42%;}
   .control-panel .ability{flex:0 1 44%;}
+}
+@media (min-width:900px){
+  .viewscreen{height:290px;}
+  .control-panel .ability{flex:0 1 130px;}
 }
 </style>
 </head>

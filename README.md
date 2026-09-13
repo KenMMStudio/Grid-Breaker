@@ -1,5 +1,62 @@
 # Grid Breaker
 
+## A real viewport/layout bug found by a second review and fixed this round
+
+A prior round's report claimed the responsive layout was "fixed" without providing screenshots that actually proved it. A closer look at the CSS confirmed three real, related problems:
+
+```css
+.cabinet{max-width:640px;}                              /* far too narrow on desktop/tablet */
+#board{width:min(88vw,440px);height:min(88vw,440px);}   /* board capped small even with room to grow */
+```
+
+On desktop and tablet widths, the whole game was squeezed into a narrow 640px column with large empty gutters on both sides, and the board never grew past 440px even at 1920px wide. There was no rule re-expanding the cabinet or the board for wider viewports.
+
+**The fix widens the caps instead of patching around them:**
+
+```css
+.cabinet{max-width:min(900px,94vw);width:100%;margin:0 auto;...}
+#board{width:min(88vw,600px);height:min(88vw,600px);...}
+@media (min-width:900px){
+  .viewscreen{height:290px;}
+  .control-panel .ability{flex:0 1 130px;}
+}
+```
+
+The cabinet now scales up to 900px (94vw on anything narrower) instead of stopping at 640px, the board scales up to 600px instead of 440px, and a new `min-width:900px` rule gives the viewscreen and ability buttons a bit more breathing room once the wider cabinet is in effect. Nothing about the single-column composition changed — only the numeric caps.
+
+**Verified by real screenshots and `getBoundingClientRect()`/`scrollWidth` measurements, in both languages, at all 7 requested sizes:**
+
+| Size | scrollWidth vs clientWidth | Cabinet / board |
+|---|---|---|
+| 1920×1080 (desktop) | equal, no overflow | 900×~1301 cabinet, 600×600 board |
+| 1440×900 (desktop) | equal, no overflow | 900×~1301 cabinet, 600×600 board |
+| 1024×768 (tablet) | equal, no overflow | 900×~1301 cabinet, 600×600 board |
+| 768×1024 (tablet) | equal, no overflow | ~722×~1252 cabinet, 600×600 board |
+| 390×844 (mobile) | equal, no overflow | 366×~1256 cabinet, 343×343 board |
+| 375×812 (mobile) | equal, no overflow | 351×~1242 cabinet, 330×330 board |
+| 812×375 (mobile landscape) | equal, no overflow | ~763×~1252 cabinet, 600×600 board |
+
+At every size, `document.documentElement.scrollWidth === clientWidth` (zero horizontal overflow), and the board/scene/stats/abilities/legend/log all remain reachable through ordinary vertical scroll — no content is trapped off-screen. On desktop/tablet the board is now visibly much larger and the huge empty side gutters are gone; on phone widths the board still scales down via `min(88vw, 600px)` exactly as before.
+
+**A tooling artifact hit during this round's testing, worth recording honestly:** the browser-preview tool's screenshot capture became unreliable (frozen/incorrectly-scaled frames) on a single tab that had been resized and navigated many times over the session. Cross-checking against `getBoundingClientRect()`/`scrollWidth` JS measurements proved the actual page layout was correct even when the screenshot looked wrong. The fix was to open a fresh browser tab for screenshots going forward — this is a limitation of the testing tool used this session, not a bug in the game.
+
+## Full functional checklist replayed this round, both languages, real clicks/waits (not code review)
+
+- **Home, mode select**: loaded fresh in both languages, mode-select cards still render correctly (badge/title/description/button in one row — the previous round's CSS-specificity fix was unaffected by this round's changes).
+- **Settings modal + Sound ON/OFF**: opened mid-battle, sound toggled (🔊→🔇), confirmed via the settings card's own "Son : Activé/Désactivé" text, closed and confirmed `settings-modal.hidden === true`.
+- **EN → FR and FR → EN**: switched from the in-game settings modal, confirmed by reading the resulting page's own text after navigation.
+- **Full 8-step tutorial, French**: played with genuine adjacent-cell swaps (found programmatically from the live board state, not hardcoded coordinates) and a genuine ability cast (`btn-1`/Frappe d'impulsion), confirmed by reading `tt-step`'s text progressing to a real board victory landing cleanly on mode select.
+- **Home-from-combat**: confirmed via `screen-start.hidden === false` after clicking Home mid-battle.
+- **Pause/Resume**: confirmed by reading the enemy attack timer (`val-enemytimer`) frozen across a 3s wait while paused, then advancing again after Resume.
+- **A full Campaign run to a real Victory, both languages**: real adjacent-swap matches (computed live from the board's actual rune layout, not scripted moves) played until enemy HP reached 0 — "Incident Maîtrisé" / "Incident Contained" shown with real, non-placeholder score/damage/XP/credit numbers in both languages.
+- **Upgrades screen**: opened with real (low, ~25cr) credits — all upgrades correctly shown as disabled/unaffordable at that credit level, matching the cost-gating logic, in both languages.
+- **A real Defeat + Retry, both languages**: let the enemy's attack timer run down repeatedly without healing until HP reached exactly 0 — "Opérateur Hors Service" / "Operator Down" shown with correct stats, Retry confirmed to restart the same Incident at full HP.
+- **Grid Overdrive (Timed mode)**: started, played real matches (score and combo confirmed updating live) in both languages; the French run was watched to its own natural end ("Surcharge Terminée", real nonzero score of 120 and a new-best-score flag, credits +8); the English run was spot-checked for live scoring (score 60 after 3 real matches) rather than replaying the full 60s countdown a second time, since the identical JS timer/scoring path was already watched to completion in French this round.
+
+## Comparison against the reference site — unchanged from previous rounds
+
+`https://runes-of-the-arcane-realm.vercel.app/`'s two-column composition was already replaced with a single vertical `.cabinet` column in a previous round; this round's fix only changed numeric CSS caps (`.cabinet` max-width, `#board` width/height) and added one `min-width:900px` media rule — it did not reintroduce a two-column layout or touch any other composition element.
+
 A complete, standalone **match-3 RPG**. The city's power grid is failing; you play a field operator matching energy runes on an 8×8 board to power attacks, healing, shields and special abilities while fighting network anomalies one incident at a time. No content, vocabulary, logic, or interface reused from any other project.
 
 Visible name on every screen: **Grid Breaker** only. No subtitle, no second name. (The in-fiction "Blackout" flavor names — the boss *Blackout Prime* and the ultimate ability *Blackout Surge* — are lore tied to the city-power-outage setting, not the product name; this is a separate, independently-named project, distinct from *Blackout Protocol*.)
@@ -51,6 +108,13 @@ Because the second (leftover) rule came later in the stylesheet, it won the casc
 - Boss fight (Incident 10, Blackout Prime) and Incidents 5–9 specifically were not replayed this round.
 - Victory/Defeat/Upgrades/Settings screens' pixel-perfect layout at every one of the previously-checked sizes was not re-screenshotted beyond the desktop+mobile checks above, since this round's fix touched only `.mode-card` and `.mode-body` rules, confirmed by diff not to affect any other selector.
 - Real touch input on physical hardware was not tested.
+
+## Tests NOT (fully) performed in this latest round (viewport/layout fix)
+
+- **Grid Overdrive's 60s countdown was watched to its own natural end in French only** this round; the English run was confirmed live (real score/combo updating from real matches) but not replayed for the full 60 seconds a second time, since the timer/scoring code is byte-identical between the two files and was untouched by this round's CSS-only changes.
+- **Boss fight (Incident 10) and Incidents 3–9** were not replayed this round in either language — only Incidents 1–2 were driven to real conclusions.
+- **A real Upgrade purchase** was not completed this round — credits earned (~25) never reached the cheapest upgrade's cost (40cr), so only the disabled/unaffordable gating was re-confirmed live, not a completed purchase.
+- **Real touch input on physical hardware** was not tested.
 
 ## Files
 
