@@ -479,6 +479,61 @@ body::before{
   #screen-game .viewscreen{height:clamp(130px,22vh,240px);}
   .chip{flex:1 1 140px;}
 }
+
+/* Composition arcade desktop : la scène et le plateau partagent l'écran. */
+@media (min-width:960px){
+  #screen-game{min-height:100dvh;height:auto;overflow-y:auto;}
+  #screen-game>.topbar{max-width:min(1480px,calc(100vw - 48px));}
+  #screen-game .cabinet{
+    max-width:min(1480px,calc(100vw - 48px));
+    display:grid;
+    --combat-size:clamp(220px,34vh,360px);
+    grid-template-columns:auto auto;
+    justify-content:center;
+    column-gap:16px;
+    row-gap:8px;
+    grid-template-areas:
+      "status status"
+      "scene board"
+      "move move"
+      "timed timed"
+      "controls controls"
+      "legend legend"
+      "log log";
+    align-items:start;
+  }
+  #screen-game .cabinet>.status-marquee{grid-area:status;}
+  #screen-game .cabinet>.viewscreen{
+    grid-area:scene;
+    width:clamp(420px,44vw,980px);
+    height:var(--combat-size);
+    justify-self:stretch;
+    align-self:center;
+    margin:0;
+  }
+  #screen-game .cabinet>#board{
+    grid-area:board;
+    width:var(--combat-size);
+    height:auto;
+    aspect-ratio:1;
+    min-width:0;
+    justify-self:stretch;
+    align-self:center;
+    margin:0;
+    flex:none;
+  }
+  #screen-game .cabinet>.move-msg{grid-area:move;}
+  #screen-game .cabinet>#timed-panel{grid-area:timed;}
+  #screen-game .cabinet>.control-panel{grid-area:controls;}
+  #screen-game .cabinet>.legend{grid-area:legend;}
+  #screen-game .cabinet>.log-panel{grid-area:log;}
+  #screen-game .control-panel .abilities-bar{max-width:820px;margin:0 auto;}
+}
+@media (max-width:959px){
+  #screen-game{min-height:100dvh;overflow-y:auto;}
+  #screen-game .cabinet{max-width:min(94vw,680px);}
+  #screen-game .cabinet>#board{width:min(88vw,520px);height:auto;aspect-ratio:1;}
+}
 </style>
 </head>
 <body>
