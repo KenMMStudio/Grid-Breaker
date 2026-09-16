@@ -1579,8 +1579,11 @@ function startTutorial(){
 // bottom of the viewport; on first launch the board can render with its hinted
 // cells sitting underneath it, out of reach until the player scrolls manually.
 // Measures the UNION of every hinted cell (not just the first one - a swap
-// needs both endpoints reachable) and scrolls just enough to clear the
-// dialog's actual (measured, not guessed) height.
+// needs both endpoints reachable). Uses native scrollIntoView (via
+// scroll-margin) rather than a hand-computed window.scrollTo, so whichever
+// ancestor actually scrolls - the window, or a nested overflow:auto container
+// if the layout ever changes to use one - is the one the browser moves, not
+// an assumption baked into this function.
 function scrollHintIntoView(cells){
   try{
     const box = document.querySelector('#tutorial-overlay .tt-box');
@@ -1590,8 +1593,9 @@ function scrollHintIntoView(cells){
     const bottom = Math.max(...rects.map(r=>r.bottom));
     const visibleBottom = window.innerHeight - boxH - 12;
     if(bottom > visibleBottom || top < 60){
-      const targetY = window.scrollY + top - Math.max(60, (visibleBottom/2 - (bottom-top)/2));
-      window.scrollTo(0, Math.max(0, targetY));
+      cells.forEach(c=>{ c.style.scrollMarginTop='60px'; c.style.scrollMarginBottom=(boxH+12)+'px'; });
+      cells[cells.length-1].scrollIntoView({block:'nearest', inline:'nearest'});
+      cells[0].scrollIntoView({block:'nearest', inline:'nearest'});
     }
   }catch(e){}
 }

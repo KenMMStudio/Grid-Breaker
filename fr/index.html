@@ -1581,9 +1581,11 @@ function startTutorial(){
 // viewport ; au premier lancement, le plateau peut s'afficher avec ses cellules
 // indiquées cachées dessous, hors de portée tant que le joueur ne fait pas
 // défiler manuellement. Mesure l'UNION de toutes les cellules indiquées (pas
-// seulement la première - un échange a besoin des deux extrémités accessibles)
-// et défile juste assez pour dégager la hauteur réelle (mesurée, pas devinée)
-// de la boîte.
+// seulement la première - un échange a besoin des deux extrémités accessibles).
+// Utilise scrollIntoView natif (via scroll-margin) plutôt qu'un window.scrollTo
+// calculé à la main, pour que ce soit le navigateur qui déplace le véritable
+// ancêtre défilant - la fenêtre, ou un conteneur overflow:auto imbriqué si la
+// mise en page venait à en utiliser un - au lieu d'une hypothèse figée ici.
 function scrollHintIntoView(cells){
   try{
     const box = document.querySelector('#tutorial-overlay .tt-box');
@@ -1593,8 +1595,9 @@ function scrollHintIntoView(cells){
     const bottom = Math.max(...rects.map(r=>r.bottom));
     const visibleBottom = window.innerHeight - boxH - 12;
     if(bottom > visibleBottom || top < 60){
-      const targetY = window.scrollY + top - Math.max(60, (visibleBottom/2 - (bottom-top)/2));
-      window.scrollTo(0, Math.max(0, targetY));
+      cells.forEach(c=>{ c.style.scrollMarginTop='60px'; c.style.scrollMarginBottom=(boxH+12)+'px'; });
+      cells[cells.length-1].scrollIntoView({block:'nearest', inline:'nearest'});
+      cells[0].scrollIntoView({block:'nearest', inline:'nearest'});
     }
   }catch(e){}
 }
