@@ -438,6 +438,7 @@ body::before{
 
 .control-panel{padding:16px 12px 12px;position:relative;}
 .cp-label{position:absolute;top:-9px;left:14px;background:#05030e;padding:0 6px;font-size:9px;letter-spacing:.14em;color:var(--yellow);}
+.cp-hint{text-align:center;font-size:9px;color:var(--text-dim);letter-spacing:.04em;margin-bottom:6px;}
 .control-panel .abilities-bar{justify-content:center;flex-wrap:wrap;}
 .control-panel .ability{flex:0 1 110px;border-radius:16px 16px 6px 6px;position:relative;padding-top:16px;}
 .control-panel .ability::before{content:"";position:absolute;top:5px;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);}
@@ -654,6 +655,7 @@ body::before{
     <div class="panel control-panel">
       <span class="corner tl"></span><span class="corner tr"></span>
       <div class="cp-label">CONTROL PANEL</div>
+      <div class="cp-hint">Keyboard: keys 1–4</div>
       <div class="abilities-bar" id="abilities-bar"></div>
     </div>
 
@@ -800,6 +802,8 @@ const ABILITIES = [
 
 const SAVE_KEY = 'gb_save_v1';
 const TUT_KEY  = 'gb_tutorial_seen_v1';
+const LANG_KEY = 'gb_lang';
+const EVT_KEY  = 'gb_events_v1';
 
 function defaultSave(){
   return {level:1, xp:0, gold:0, battle:1, bestTimed:0,
@@ -813,6 +817,38 @@ function loadSave(){
 function persist(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(SAVE)); }catch(e){} }
 function tutorialSeen(){ try{ return localStorage.getItem(TUT_KEY)==='1'; }catch(e){ return false; } }
 function markTutorialSeen(){ try{ localStorage.setItem(TUT_KEY,'1'); }catch(e){} }
+
+// Language choice persists across reload: whichever file was last opened via the
+// in-game switch is remembered, so returning to the site (root URL, a fresh tab,
+// a plain reload) lands back on that language instead of always resetting to EN.
+function setLangPref(lang){ try{ localStorage.setItem(LANG_KEY, lang); }catch(e){} }
+function applyLangPrefRedirect(currentLang, otherUrl){
+  try{
+    const pref = localStorage.getItem(LANG_KEY);
+    if(pref && pref!==currentLang){ location.replace(otherUrl); }
+  }catch(e){}
+}
+
+// Lightweight client-side event log (no backend — same pattern as the rest of this
+// game's localStorage-based persistence). Powers "first ability used" / "first
+// incident cleared" style milestones without adding any external analytics.
+function trackEvent(name){
+  try{
+    const raw = localStorage.getItem(EVT_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    arr.push({name, ts:Date.now()});
+    if(arr.length>300) arr.splice(0, arr.length-300);
+    localStorage.setItem(EVT_KEY, JSON.stringify(arr));
+  }catch(e){}
+}
+function trackOnce(name, flagKey){
+  try{
+    if(localStorage.getItem(flagKey)==='1') return;
+    localStorage.setItem(flagKey,'1');
+  }catch(e){}
+  trackEvent(name);
+}
+applyLangPrefRedirect('en','fr/index.html');
 
 let SAVE = loadSave();
 let soundOn = true;
@@ -936,8 +972,9 @@ function closeSettings(){ $('settings-modal').hidden=true; }
 function goHome(){
   S.paused=true; S.tutorial.active=false; $('tutorial-overlay').hidden=true;
   closeSettings(); refreshHome(); showScreen('screen-start');
+  trackEvent('return_to_menu');
 }
-function switchLanguage(){ location.href='fr/index.html'; }
+function switchLanguage(){ setLangPref('fr'); location.href='fr/index.html'; }
 refreshSoundBtn();
 
 $('btn-play').addEventListener('click', ()=>{
@@ -1286,6 +1323,7 @@ function useAbility(id){
   if(!a || !abilityReady(a)) return;
   const p = S.player;
   if(a.res==='overload') p.overload = 0; else p.energy -= a.cost;
+  trackOnce('first_ability_used','gb_ms_first_ability');
   if(S.tutorial.active) tutorialOnAbility(id);
   switch(id){
     case 'pulse_strike': dealDamageToEnemy(Math.round((30+(SAVE.up.atk||0)*4)*p.atkMult), false); break;
@@ -1407,6 +1445,7 @@ function onCampaignVictory(){
   SAVE.gold += goldGain;
   SAVE.battle = battle+1;
   persist();
+  trackOnce('first_incident_cleared','gb_ms_first_incident');
   setTimeout(()=>{
     $('win-name').textContent = `${S.enemy.name} neutralized${leveled? ' — Level Up!':''}`;
     $('win-score').textContent = Math.round(S.totalDamageDealt + goldGain*3);
@@ -1594,6 +1633,7 @@ function finishTutorial(){
   $('tutorial-overlay').hidden = true;
   clearHints(); clearAbilityHighlight();
   markTutorialSeen();
+  trackEvent('tutorial_complete');
   toast('Tutorial complete');
   goModeSelect();
 }
