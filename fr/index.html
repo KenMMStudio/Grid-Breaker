@@ -1575,22 +1575,26 @@ function startTutorial(){
   cellDom(0,0).classList.add('hint');
   cellDom(1,0).classList.add('hint');
   S.tutorial.waitingSwap = [[0,0],[1,0]];
-  scrollHintIntoView(cellDom(0,0));
+  scrollHintIntoView([cellDom(0,0), cellDom(1,0)]);
 }
 // Sur petit écran, la boîte du tutoriel est un panneau fixe ancré en bas du
 // viewport ; au premier lancement, le plateau peut s'afficher avec ses cellules
 // indiquées cachées dessous, hors de portée tant que le joueur ne fait pas
-// défiler manuellement. On défile juste assez pour dégager la hauteur réelle
-// (mesurée, pas devinée) de la boîte.
-function scrollHintIntoView(cell){
+// défiler manuellement. Mesure l'UNION de toutes les cellules indiquées (pas
+// seulement la première - un échange a besoin des deux extrémités accessibles)
+// et défile juste assez pour dégager la hauteur réelle (mesurée, pas devinée)
+// de la boîte.
+function scrollHintIntoView(cells){
   try{
     const box = document.querySelector('#tutorial-overlay .tt-box');
     const boxH = (box && !$('tutorial-overlay').hidden) ? box.getBoundingClientRect().height : 0;
-    const rect = cell.getBoundingClientRect();
+    const rects = cells.map(c=>c.getBoundingClientRect());
+    const top = Math.min(...rects.map(r=>r.top));
+    const bottom = Math.max(...rects.map(r=>r.bottom));
     const visibleBottom = window.innerHeight - boxH - 12;
-    if(rect.bottom > visibleBottom || rect.top < 60){
-      const targetY = window.scrollY + rect.top - Math.max(60, (visibleBottom/2 - rect.height/2));
-      window.scrollTo({top: Math.max(0, targetY), behavior:'smooth'});
+    if(bottom > visibleBottom || top < 60){
+      const targetY = window.scrollY + top - Math.max(60, (visibleBottom/2 - (bottom-top)/2));
+      window.scrollTo(0, Math.max(0, targetY));
     }
   }catch(e){}
 }

@@ -1573,21 +1573,25 @@ function startTutorial(){
   cellDom(0,0).classList.add('hint');
   cellDom(1,0).classList.add('hint');
   S.tutorial.waitingSwap = [[0,0],[1,0]];
-  scrollHintIntoView(cellDom(0,0));
+  scrollHintIntoView([cellDom(0,0), cellDom(1,0)]);
 }
 // On small/mobile screens the tutorial dialog is a fixed panel docked to the
 // bottom of the viewport; on first launch the board can render with its hinted
 // cells sitting underneath it, out of reach until the player scrolls manually.
-// Scroll just enough to clear the dialog's actual (measured, not guessed) height.
-function scrollHintIntoView(cell){
+// Measures the UNION of every hinted cell (not just the first one - a swap
+// needs both endpoints reachable) and scrolls just enough to clear the
+// dialog's actual (measured, not guessed) height.
+function scrollHintIntoView(cells){
   try{
     const box = document.querySelector('#tutorial-overlay .tt-box');
     const boxH = (box && !$('tutorial-overlay').hidden) ? box.getBoundingClientRect().height : 0;
-    const rect = cell.getBoundingClientRect();
+    const rects = cells.map(c=>c.getBoundingClientRect());
+    const top = Math.min(...rects.map(r=>r.top));
+    const bottom = Math.max(...rects.map(r=>r.bottom));
     const visibleBottom = window.innerHeight - boxH - 12;
-    if(rect.bottom > visibleBottom || rect.top < 60){
-      const targetY = window.scrollY + rect.top - Math.max(60, (visibleBottom/2 - rect.height/2));
-      window.scrollTo({top: Math.max(0, targetY), behavior:'smooth'});
+    if(bottom > visibleBottom || top < 60){
+      const targetY = window.scrollY + top - Math.max(60, (visibleBottom/2 - (bottom-top)/2));
+      window.scrollTo(0, Math.max(0, targetY));
     }
   }catch(e){}
 }
