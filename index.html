@@ -30,8 +30,10 @@ body{
   overflow-x:hidden;
   min-height:100vh;
   -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
 }
 button{font-family:inherit;}
+.cell,.ability,.btn,.icon-btn{touch-action:manipulation;}
 .screen{
   min-height:100vh;
   width:100%;
@@ -983,7 +985,7 @@ $('btn-play').addEventListener('click', ()=>{
 });
 $('howtoplay-link').addEventListener('click', ()=> startTutorial());
 $('btn-upgrades').addEventListener('click', ()=>{ showScreen('screen-upgrades'); renderUpgrades(); });
-$('btn-upgrades-back').addEventListener('click', ()=> { showScreen('screen-start'); refreshHome(); });
+$('btn-upgrades-back').addEventListener('click', ()=> { showScreen('screen-start'); refreshHome(); trackEvent('return_to_menu'); });
 $('btn-settings').addEventListener('click', openSettings);
 $('btn-settings-close').addEventListener('click', closeSettings);
 $('btn-settings-sound').addEventListener('click', ()=>{ soundOn=!soundOn; refreshSoundBtn(); refreshSettingsSound(); });
@@ -1003,9 +1005,9 @@ function goModeSelect(){
 $('btn-start-campaign').addEventListener('click', ()=> startCampaignBattle(SAVE.battle));
 $('btn-start-timed').addEventListener('click', ()=> startTimed());
 
-$('btn-win-home').addEventListener('click', ()=> { showScreen('screen-start'); refreshHome(); });
-$('btn-lose-home').addEventListener('click', ()=> { showScreen('screen-start'); refreshHome(); });
-$('btn-timed-home').addEventListener('click', ()=> { showScreen('screen-start'); refreshHome(); });
+$('btn-win-home').addEventListener('click', ()=> { showScreen('screen-start'); refreshHome(); trackEvent('return_to_menu'); });
+$('btn-lose-home').addEventListener('click', ()=> { showScreen('screen-start'); refreshHome(); trackEvent('return_to_menu'); });
+$('btn-timed-home').addEventListener('click', ()=> { showScreen('screen-start'); refreshHome(); trackEvent('return_to_menu'); });
 $('btn-win-upgrades').addEventListener('click', ()=> { showScreen('screen-upgrades'); renderUpgrades(); });
 $('btn-lose-upgrades').addEventListener('click', ()=> { showScreen('screen-upgrades'); renderUpgrades(); });
 $('btn-timed-upgrades').addEventListener('click', ()=> { showScreen('screen-upgrades'); renderUpgrades(); });
@@ -1588,7 +1590,7 @@ function tutorialOnSwapSuccess(){
       tutorialShow(3, 'Energy runes refill your Energy bar, used to power abilities below.');
       setTimeout(()=>{
         S.tutorial.step=4;
-        tutorialShow(4, 'When you have enough Energy, tap ability 1 (Pulse Strike) or press the "1" key.');
+        tutorialShow(4, 'When you have enough Energy, tap ability 1 (Pulse Strike) or press the "1" key — all four abilities below have their own key, 1 to 4.');
         highlightAbility('pulse_strike');
       }, 2200);
     }, 1600);
