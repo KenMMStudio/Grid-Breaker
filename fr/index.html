@@ -1575,6 +1575,24 @@ function startTutorial(){
   cellDom(0,0).classList.add('hint');
   cellDom(1,0).classList.add('hint');
   S.tutorial.waitingSwap = [[0,0],[1,0]];
+  scrollHintIntoView(cellDom(0,0));
+}
+// Sur petit écran, la boîte du tutoriel est un panneau fixe ancré en bas du
+// viewport ; au premier lancement, le plateau peut s'afficher avec ses cellules
+// indiquées cachées dessous, hors de portée tant que le joueur ne fait pas
+// défiler manuellement. On défile juste assez pour dégager la hauteur réelle
+// (mesurée, pas devinée) de la boîte.
+function scrollHintIntoView(cell){
+  try{
+    const box = document.querySelector('#tutorial-overlay .tt-box');
+    const boxH = (box && !$('tutorial-overlay').hidden) ? box.getBoundingClientRect().height : 0;
+    const rect = cell.getBoundingClientRect();
+    const visibleBottom = window.innerHeight - boxH - 12;
+    if(rect.bottom > visibleBottom || rect.top < 60){
+      const targetY = window.scrollY + rect.top - Math.max(60, (visibleBottom/2 - rect.height/2));
+      window.scrollTo({top: Math.max(0, targetY), behavior:'smooth'});
+    }
+  }catch(e){}
 }
 function tutorialAllowsClick(r,c){
   const w = S.tutorial.waitingSwap;
